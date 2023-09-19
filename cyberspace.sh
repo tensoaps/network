@@ -16,8 +16,9 @@ fi
 
 case "$1" in
     -upgradecore)
-        wget git.io/warp.sh
+        #wget git.io/warp.sh
         #sudo sh warp.sh 4
+        sudo vi /etc/selinux/config
         sudo rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
         sudo rpm -Uvh https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
         sudo yum --enablerepo=elrepo-kernel install kernel-lt
@@ -96,6 +97,7 @@ case "$1" in
         sudo firewall-cmd --permanent --zone=public --add-service=http --add-service=https  
         sudo firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"$(echo $YourIPaddress | cut -d '.' -f 1-3).0/24\" port protocol=\"tcp\" port=\"$NewSSHport\" accept"
         sudo firewall-cmd --reload
+        sleep 10
         sudo iptables -I IN_public_allow -s 0.0.0.0/0 -p tcp --dport $NewSSHport -m conntrack --ctstate NEW -m time --timestart 13:14 --timestop 13:44 -j ACCEPT
         sudo semanage port -a -t ssh_port_t -p tcp $NewSSHport
         echo "Setting firewall finished"
@@ -120,7 +122,10 @@ case "$1" in
             server_name $Domainname;
             
             location / {
-                proxy_pass https://store.steampowered.com;
+                #phishing and domain may be suspended
+                #proxy_pass https://store.steampowered.com;
+                root /usr/share/nginx/html;
+                index index.html index.htm;
             }
             
             client_header_timeout 120s;
